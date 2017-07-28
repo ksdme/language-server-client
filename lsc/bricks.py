@@ -62,7 +62,7 @@ class ResponseError(Brick):
 class Message(Brick):
     """
         {
-            "jsonrpc": "constant(str('2.0'))"
+            "jsonrpc": "str('2.0')"
         }
     """
 
@@ -70,7 +70,7 @@ class Message(Brick):
 class RequestMessage(Brick):
     """
         {
-            "jsonrpc":  "constant(str('2.0'))",
+            "jsonrpc":  "str('2.0')",
 
             "id":       "or(int(), str())",
             "method":   "str()",
@@ -82,7 +82,7 @@ class RequestMessage(Brick):
 class ResponseMessage(Brick):
     """
         {
-            "jsonrpc": "constant(str('2.0'))",
+            "jsonrpc": "str('2.0')",
 
             "id":       "or(int(), str(), null())",
             "result":   "opt(any())",

@@ -1,2 +1,2 @@
-# language-server-client
-;)
+# Language Server Protocol's Python Client
+In active development

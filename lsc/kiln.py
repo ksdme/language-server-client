@@ -4,22 +4,9 @@
 """
 Fail = "#@None@#"
 
-def string(val=None):
-    """ Returns if str flag is none else lambda """
-
-    if val is None:
-        return lambda arg: arg if isinstance(arg, str) else Fail
-    else:
-        return lambda arg: str(val)
-
-def klass(val=None):
-    """ Ensures that the arg is a instance of a class """
-
-    if val is None:
-        return lambda arg: Fail
-    else:
-        return lambda arg: arg if isinstance(arg, val) else Fail
-
+# -------------------------------------
+# Simple value based type checker
+# -------------------------------------
 def integer(val=None):
     """ Convert into int or ensure that it is an integer """
 
@@ -28,6 +15,25 @@ def integer(val=None):
     else:
         return lambda arg: int(val)
 
+def string(val=None):
+    """ Returns if str flag is none else lambda """
+
+    if val is None:
+        return lambda arg: arg if isinstance(arg, str) else Fail
+    else:
+        return lambda arg: str(val)
+
+def null():
+    """ Accepts None """
+    return lambda val: None if val is None else Fail
+
+def accept_any():
+    """ It doesn't care, Accepts all """
+    return lambda val: val
+
+# -------------------------------------
+# Extended type checkers
+# -------------------------------------
 def positive(arg):
     """ Accepts only positive """
 
@@ -38,35 +44,9 @@ def int_range(start, end):
 
     return lambda val: val if val >= start and val <= end else Fail
 
-def bool_or(*args):
-    """ Or """
-
-    def internal(val):
-        for elem in args:
-            val = elem(val=val)
-            if val is not Fail:
-                return val
-
-    return internal
-
-def bool_eq(arg):
-    """ Equals """
-
-    return lambda val: val if arg == val else Fail
-
-def opt(lhs, default=None):
-    """ Optional, If lhs fails then default """
-
-    return lambda val: lhs(val=val) or default
-
-def accept_any():
-    """ It doesn't care, Accepts all """
-    return lambda val: val
-
-def null():
-    """ Accepts None """
-    return lambda val: None if val is None else Fail
-
+# -------------------------------------
+# Collection type checkers
+# -------------------------------------
 def array(typ):
     """ Ahoy, An array! """
 
@@ -95,3 +75,38 @@ def dikt(keyTyp, valTyp):
         return dykt
 
     return lhs
+
+# -------------------------------------
+# Compound type checkers
+# -------------------------------------
+def bool_or(*args):
+    """ Or """
+
+    def internal(val):
+        for elem in args:
+            val = elem(val=val)
+            if val is not Fail:
+                return val
+
+    return internal
+
+def bool_eq(arg):
+    """ Equals """
+
+    return lambda val: val if arg == val else Fail
+
+def opt(lhs, default=None):
+    """ Optional, If lhs fails then default """
+
+    return lambda val: lhs(val=val) or default
+
+# -------------------------------------
+# Simple class instance checker
+# -------------------------------------
+def klass(val=None):
+    """ Ensures that the arg is a instance of a class """
+
+    if val is None:
+        return lambda arg: Fail
+    else:
+        return lambda arg: arg if isinstance(arg, val) else Fail

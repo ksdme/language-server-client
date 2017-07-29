@@ -11,21 +11,10 @@ import unittest
 from lsc import bricks
 
 class TestUnits(unittest.TestCase):
-    """ TestUnit """
+    """ Basic TestUnit """
 
-    def test_protocol_units(self):
+    def test_protocol_raw_bricks(self):
         """
-            Tests all Brick classes provided
-            by lsc.bricks if their doc strings
-            are json loadbale
+            Tests if each brick class has an associated
+            STRUCT
         """
-
-        for attrbute in dir(bricks):
-            avail = getattr(bricks, attrbute)
-            if isinstance(avail, type):
-                if issubclass(avail, bricks.Brick):
-                    try:
-                        json.loads(avail.__doc__)
-                    except Exception as err:
-                        self.assertTrue(False,
-                                        "{}; {}".format(attrbute, str(err)))

@@ -80,3 +80,18 @@ def array(typ):
         return val
 
     return lhs
+
+def dikt(keyTyp, valTyp):
+    """ Checks if the passed array's type """
+
+    def lhs(dykt):
+        assert isinstance(dykt, dict)
+
+        for key, val in dykt.iteritems():
+            if not isinstance(key, keyTyp):
+                if not isinstance(val, valTyp):
+                    return Fail
+
+        return dykt
+
+    return lhs

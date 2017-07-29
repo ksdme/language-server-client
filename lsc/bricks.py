@@ -2,6 +2,7 @@
     @author ksdme
     Contains wrappers for protocol objects
 """
+from lsc.kiln import *
 
 class Brick(object):
     """ "null" """
@@ -12,25 +13,28 @@ class Brick(object):
 # -------------------------------------
 # Refer to protocol.md#uri
 class DocumentUri(Brick):
-    """
-        "str()"
-    """
+    """ Represents Document, Simply a Path String """
+
+    STRUCT = string()
 
 class TextDocumentIdentifier(Brick):
-    """
-        {
-            "uri": "class(DocumentUri)"
-        }
-    """
+    """ Simply Extends DocumentUri for TextDoc """
+
+    STRUCT = {
+        "uri": klass(DocumentUri)
+    }
 
 # extends TextDocumentIdentifier
 class VersionedTextDocumentIdentifier(Brick):
     """
-        {
-            "uri": "class(DocumentUri)",
-            "version": "int()"
-        }
+       Extends TextDocIden to include Version int,
+       It should ideally be incremented on each edit
     """
+
+    STRUCT = {
+        "uri": klass(DocumentUri),
+        "version": integer()
+    }
 
 # -------------------------------------
 # Error/Diagonstic Codes Handlers
@@ -41,170 +45,206 @@ class DiagnosticSeverity(Brick):
         "int_range(1, 4)"
     """
 
+    STRUCT = int_range(1, 4)
+
 # protocol.md#response-message
 class ErrorCodes(Brick):
     """
-        "or(eq(-32700),eq(-32600),eq(-32601),eq(-32602),eq(-32603),eq(-32099),eq(-32000),eq(-32002),eq(-32001),eq(-32800))"
+        You know how it is, errors are bound to
+        happen and then we have error codes
     """
+
+    STRUCT = bool_or(
+        bool_eq(-32700),
+        bool_eq(-32600),
+        bool_eq(-32601),
+        bool_eq(-32602),
+        bool_eq(-32603),
+        bool_eq(-32099),
+        bool_eq(-32000),
+        bool_eq(-32002),
+        bool_eq(-32001),
+        bool_eq(-32800))
 
 class ResponseError(Brick):
-    """
-        {
-            "code":     "int()",
-            "message":  "str()",
-            "data":     "opt(class(ErrorCodes))"
-        }
-    """
+    """ General Response Error """
 
-# ------------------------------------- 
+    STRUCT = {
+        "code": integer(),
+        "message": string(),
+        "data": opt(klass(ErrorCodes))
+    }
+
+# -------------------------------------
 # Basic Bricks
 # -------------------------------------
 class Message(Brick):
-    """
-        {
-            "jsonrpc": "str('2.0')"
-        }
-    """
+    """ General Message """
+
+    STRUCT = {
+        "jsonrpc": str("2.0")
+    }
 
 # extends Message
 class RequestMessage(Brick):
-    """
-        {
-            "jsonrpc":  "str('2.0')",
+    """ Request Messages """
 
-            "id":       "or(int(), str())",
-            "method":   "str()",
-            "params":   "opt(any())"
-        }
-    """
+    STRUCT = {
+        "jsonrpc": str("2.0"),
+
+        "id": bool_or(integer(), string()),
+        "method": string(),
+        "params": opt(accept_any())
+    }
 
 # extends Message
 class ResponseMessage(Brick):
-    """
-        {
-            "jsonrpc": "str('2.0')",
+    """ Response Message """
 
-            "id":       "or(int(), str(), null())",
-            "result":   "opt(any())",
-            "error":    "opt(class(ResponseError))"
-        }
-    """
+    STRUCT = {
+        "jsonrpc": str("2.0"),
+
+        "id": bool_or(integer(), string(), null()),
+        "result": opt(accept_any()),
+        "error": opt(klass(ResponseError))
+    }
 
 # extends Message
 class NotificationMessage(Brick):
-    """
-        {
-            "method": "str()",
-            "params": "opt(any())"
-        }
-    """
+    """ Notification Message """
+
+    STRUCT = {
+        "method": string(),
+        "params": opt(accept_any())
+    }
 
 class CancelParams(Brick):
-    """
-        {
-            "id": "or(int(), str())"
-        }
-    """
+    """ Cancel Notification """
+
+    STRUCT = {
+        "id": bool_or(integer(), string())
+    }
 
 # -------------------------------------
 # Bricks
 # -------------------------------------
 class Position(Brick):
     """
-        {
-            "line":     "pos(int())",
-            "character":"pos(int())"
-        }
+        Position of a character in a document
+        by its line number and character offset
+        Inclusive, Zero based index
     """
+
+    STRUCT = {
+        "line": positive(integer()),
+        "character": positive(integer())
+    }
 
 class Range(Brick):
     """
-        {
-            "start":    "class(Position)",
-            "end":      "class(Position)"
-        }
+        Represents Selection range in a text document,
+        By Start Position and End Position
     """
+
+    STRUCT = {
+        "start": klass(Position),
+        "end": klass(Position)
+    }
 
 class Location(Brick):
     """
-        {
-            "uri":   "class(DocumentUri)",
-            "range": "class(Range)"
-        }
+       Location of a Range in a document by DocumentUri
     """
+
+    STRUCT = {
+        "uri": klass(DocumentUri),
+        "range": klass(Range)
+    }
 
 class Diagnostic(Brick):
     """
-        {
-            "range":    "class(Range)",
-            "severity": "opt(class(DiagnosticSeverity))",
-            "code":     "opt(or(int(), str()))",
-            "source":   "opt(str())",
-            "message":  "str()"
-        }
+        Diagnostic Message issued by the Server,
+        Optionally Code
     """
+
+    STRUCT = {
+        "range": klass(Range),
+        "severity": opt(klass(DiagnosticSeverity)),
+        "code": opt(bool_or(integer(), string())),
+        "source": opt(string()),
+        "message": string()
+    }
 
 class Command(Brick):
-    """
-        {
-            "title":        "str()",
-            "command":      "str()",
-            "arguments":    "opt(array())"
-        }
-    """
+    """ Command Message """
+
+    STRUCT = {
+        "title": string(),
+        "command": string(),
+        "arguments": opt(array(accept_any()))
+    }
 
 class TextEdit(Brick):
-    """
-        {
-            "range": "class(Range)",
-            "newText": "str()"
-        }
-    """
+    """ A TextEdit Message """
+
+    STRUCT = {
+        "range": klass(Range),
+        "newText": string()
+    }
 
 class TextDocumentEdit(Brick):
     """
-        {
-            "textDocument": "class(VersionedTextDocumentIdentifier)",
-            "edits":        "array(class(TextEdit))"
-        }
+        Its a collection of edits on a given document
+        by Version identified Document Uri,
+
+        Execution-wise text edits should be applied from the bottom
+        to the top of the text document. Overlapping text edits are
+        not supported.
     """
+
+    STRUCT = {
+        "textDocument": klass(VersionedTextDocumentIdentifier),
+        "edits": array(klass(TextEdit))
+    }
 
 class WorkspaceEdit(Brick):
     """
-        {
-            "changes": "opt(dict(class(DocumentUri), array(class(TextEdit))))",
-            "documentChanges": "array(class(TextDocumentEdit))"
-        }
+        A Collection of TextDocumentEdits in a workspace
     """
+
+    STRUCT = {
+        "changes": opt(dikt(klass(DocumentUri), array(klass(TextEdit)))),
+        "documentChanges": array(klass(TextDocumentEdit))
+    }
 
 class TextDocumentItem(Brick):
-    """
-        {
-            "uri":          "class(DocumentUri)",
-            "languageId":   "str()",
-            "version":      "int()",
-            "text":         "str()"
-        }
-    """
+    """ Message to transfer TextDoc Content to Server """
+
+    STRUCT = {
+        "uri": klass(DocumentUri),
+        "languageId": string(),
+        "version": integer(),
+        "text": string()
+    }
 
 class TextDocumentPositionParams(Brick):
-    """
-        {
-            "textDocument": "class(TextDocumentIdentifier)",
-            "position":     "class(Position)"
-        }
-    """
+    """ A TextDocumentItem with Position of some Text """
+
+    STRUCT = {
+        "textDocument": klass(TextDocumentIdentifier),
+        "position": klass(Position)
+    }
 
 class DocumentFilter(Brick):
-    """
-        {
-            "language": "opt(str())",
-            "scheme":   "opt(str())",
-            "pattern":  "opt(str())"
-        }
-    """
+    """ Filters Documents Using This Message """
+
+    STRUCT = {
+        "language": opt(string()),
+        "scheme": opt(string()),
+        "pattern": opt(string())
+    }
 
 class DocumentSelector(Brick):
-    """
-        "array(class(DocumentFilter))"
-    """
+    """ Collection of Filters """
+
+    STRUCT = array(klass(DocumentFilter))

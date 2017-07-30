@@ -5,27 +5,36 @@
 Fail = "#@None@#"
 
 # -------------------------------------
+# Utilities
+# -------------------------------------
+def isFail(val):
+    return val == Fail
+
+def fail(val):
+    return Fail
+
+# -------------------------------------
 # Simple value based type checker
 # -------------------------------------
-def integer(val=None):
+def integer(pre=None):
     """ Convert into int or ensure that it is an integer """
 
-    if val is None:
-        return lambda arg: arg if isinstance(arg, int) else Fail
+    if pre is None:
+        return lambda val: val if isinstance(val, int) and not isFail(val) else Fail
     else:
-        return lambda arg: int(val)
+        return lambda val=None: int(float(pre))
 
-def string(val=None):
+def string(pre=None):
     """ Returns if str flag is none else lambda """
 
-    if val is None:
-        return lambda arg: arg if isinstance(arg, str) else Fail
+    if pre is None:
+        return lambda val: val if isinstance(val, str) and not isFail(val) else Fail
     else:
-        return lambda arg: str(val)
+        return lambda val=None: str(pre)
 
 def null():
     """ Accepts None """
-    return lambda val: None if val is None else Fail
+    return lambda val: None
 
 def accept_any():
     """ It doesn't care, Accepts all """
@@ -34,15 +43,21 @@ def accept_any():
 # -------------------------------------
 # Extended type checkers
 # -------------------------------------
-def positive(arg):
+def positive(arg=None):
     """ Accepts only positive """
 
-    return lambda val: val if arg(val=val) >= 0 else Fail
+    if arg is None:
+        return lambda val: val if val >= 0 and not isFail(val) else Fail
+    else:
+        return lambda val: positive()(arg(val=val))
 
-def int_range(start, end):
+def int_range(start, end, arg=None):
     """ Ensure Integer Range """
 
-    return lambda val: val if val >= start and val <= end else Fail
+    if arg is None:
+        return lambda val: val if start <= val <= end and integer()(val) != Fail else Fail
+    else:
+        return lambda val: int_range(start, end)(arg(val=val))
 
 # -------------------------------------
 # Collection type checkers
@@ -51,7 +66,8 @@ def array(typ):
     """ Ahoy, An array! """
 
     def lhs(val):
-        assert isinstance(val, list)
+        if not isinstance(val, list):
+            return Fail
 
         for elem in val:
             if typ(val=elem) == Fail:
@@ -64,15 +80,15 @@ def array(typ):
 def dikt(keyTyp, valTyp):
     """ Checks if the passed array's type """
 
-    def lhs(dykt):
-        assert isinstance(dykt, dict)
+    def lhs(val):
+        if not isinstance(val, dict):
+            return Fail
 
-        for key, val in dykt.iteritems():
-            if not isinstance(key, keyTyp):
-                if not isinstance(val, valTyp):
-                    return Fail
+        for key, itm in val.iteritems():
+            if isFail(keyTyp(key)) or isFail(valTyp(itm)):
+                return Fail
 
-        return dykt
+        return val
 
     return lhs
 
@@ -84,29 +100,41 @@ def bool_or(*args):
 
     def internal(val):
         for elem in args:
-            val = elem(val=val)
-            if val is not Fail:
+            out = elem(val=val)
+            if out is not Fail:
                 return val
+
+        return Fail
 
     return internal
 
-def bool_eq(arg):
+def bool_eq(equals, arg=None):
     """ Equals """
 
-    return lambda val: val if arg == val else Fail
+    if arg is None:
+        return lambda val: val if equals == val else Fail
+    else:
+        return lambda val=None: bool_eq(equals)(arg(val=val))
 
-def opt(lhs, default=None):
+def opt(arg, default=fail):
     """ Optional, If lhs fails then default """
 
-    return lambda val: lhs(val=val) or default
+    def lhs(val):
+        out = arg(val=val)
+        if not isFail(out):
+            return out
+        else:
+            return default
+
+    return lhs
 
 # -------------------------------------
 # Simple class instance checker
 # -------------------------------------
-def klass(val=None):
+def klass(pre=None):
     """ Ensures that the arg is a instance of a class """
 
-    if val is None:
-        return lambda arg: Fail
+    if pre is None:
+        return lambda val=None: Fail
     else:
-        return lambda arg: arg if isinstance(arg, val) else Fail
+        return lambda val: val if isinstance(val, pre) and not isFail(val) else Fail

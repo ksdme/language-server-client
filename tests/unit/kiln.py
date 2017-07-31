@@ -6,7 +6,11 @@ import unittest
 from lsc.kiln import *
 
 class TestKiln(unittest.TestCase):
-    """ Basic Kiln Module Tests """
+    """
+        Basic Kiln Module Tests
+        This is not a monolithic test because the
+        order of execution doesn't really matter!
+    """
 
     def test_kiln_integer(self):
         """ integer() """
@@ -139,6 +143,15 @@ class TestKiln(unittest.TestCase):
         self.assertEqual(lamda("hey"), "hey")
         self.assertEqual(lamda(12345), 12345)
         self.assertEqual(lamda(123.45), Fail)
+
+    def test_kiln_bool_and(self):
+        """ bool_and() """
+
+        lamda = bool_and(integer(), positive())
+
+        self.assertEqual(lamda(5), 5)
+        self.assertEqual(lamda(""), Fail)
+        self.assertEqual(lamda(5.5), Fail)
 
     def test_kiln_bool_eq(self):
         """ bool_eq() """

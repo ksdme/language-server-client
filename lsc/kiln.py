@@ -8,7 +8,7 @@ Fail = "#@None@#"
 # Utilities
 # -------------------------------------
 def isFail(val):
-    return val == Fail
+    return val is Fail
 
 def fail(val):
     return Fail
@@ -70,7 +70,7 @@ def array(typ):
             return Fail
 
         for elem in val:
-            if typ(val=elem) == Fail:
+            if typ(val=elem) is Fail:
                 return Fail
 
         return val
@@ -108,11 +108,24 @@ def bool_or(*args):
 
     return internal
 
+def bool_and(*args):
+    """ Or """
+
+    def internal(val):
+        for elem in args:
+            out = elem(val=val)
+            if out is Fail:
+                return Fail
+
+        return val
+
+    return internal
+
 def bool_eq(equals, arg=None):
     """ Equals """
 
     if arg is None:
-        return lambda val: val if equals == val else Fail
+        return lambda val: val if equals is val else Fail
     else:
         return lambda val=None: bool_eq(equals)(arg(val=val))
 

@@ -1,2 +1,2 @@
-# Language Server Protocol's Python Client
+# LSC Python Client
 In active development

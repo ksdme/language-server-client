@@ -1,0 +1,6 @@
+lsc.messages.abstract:
+  RequestMessage:
+    ☐ method: might be a non empty string; .length(1)
+
+Globals:
+  ☐ Build ErrorCodes enum

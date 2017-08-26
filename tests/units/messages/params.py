@@ -3,7 +3,7 @@
 	test doc classes of lsc messages
 """
 from unittest import TestCase
-from lsc.messages.doc import *
+from lsc.messages.params import *
 
 class TestDocMessages(TestCase):
 	""" tests doc """

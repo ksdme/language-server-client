@@ -53,6 +53,7 @@ class ResponseMessage(Message):
             integer(),
             string(),
             null())
+
     result = optional(accept())
     error = optional(klass(ResponseError))
 
